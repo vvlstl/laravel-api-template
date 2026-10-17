@@ -12,7 +12,7 @@ services:
     volumes:
       - .:/var/www
     environment:
-      APP_ENV: dev
+      APP_ENV: local
       APP_DEBUG: "true"
       DB_CONNECTION: pgsql
       DB_HOST: db
