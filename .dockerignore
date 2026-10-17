@@ -2,6 +2,7 @@
 .git
 .gitignore
 .gitattributes
+.github
 
 # Docker
 compose*.yaml
@@ -60,6 +61,8 @@ tests/
 phpunit.xml
 .phpunit.result.cache
 coverage/
+phpstan.neon
+captainhook.json
 
 # Build artifacts
 public/hot
