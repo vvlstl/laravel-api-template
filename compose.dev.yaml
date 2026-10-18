@@ -11,7 +11,7 @@ services:
     working_dir: /var/www
     volumes:
       - .:/var/www
-    environment:
+    environment: &app-env
       APP_ENV: local
       APP_DEBUG: "true"
       DB_CONNECTION: pgsql
@@ -23,6 +23,29 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      QUEUE_CONNECTION: redis
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - api-dev-network
+
+  horizon:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: api_horizon_dev
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan horizon
+    volumes:
+      - .:/var/www
+    environment: *app-env
     depends_on:
       db:
         condition: service_healthy
