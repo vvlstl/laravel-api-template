@@ -10,7 +10,6 @@ use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Components\Cells\DateTimeSplit;
-use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Layouts\Persona;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
@@ -31,20 +30,20 @@ class UserListLayout extends Table
             TD::make('name', __('Name'))
                 ->sort()
                 ->cantHide()
-                ->filter(Input::make())
+                ->filter()
                 ->render(fn (User $user) => new Persona($user->presenter())),
 
             TD::make('email', __('Email'))
                 ->sort()
                 ->cantHide()
-                ->filter(Input::make())
+                ->filter()
                 ->render(fn (User $user) => ModalToggle::make($user->email)
-                    ->modal('editUserModal')
                     ->modalTitle($user->presenter()->title())
-                    ->method('saveUser')
                     ->asyncParameters([
                         'user' => $user->id,
-                    ])),
+                    ])
+                    ->modal('editUserModal')
+                    ->method('saveUser')),
 
             TD::make('created_at', __('Created'))
                 ->usingComponent(DateTimeSplit::class)
@@ -65,7 +64,7 @@ class UserListLayout extends Table
                     ->list([
 
                         Link::make(__('Edit'))
-                            ->route('platform.systems.users.edit', $user->id)
+                            ->route('platform.systems.users.edit', [$user->id])
                             ->icon('bs.pencil'),
 
                         Button::make(__('Delete'))
