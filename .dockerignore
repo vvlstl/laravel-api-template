@@ -54,6 +54,8 @@ tmp/
 *.sublime-workspace
 .DS_Store
 _ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
 .phpunit.cache
 
 # Testing

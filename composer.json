@@ -9,10 +9,13 @@
         "php": "^8.5",
         "dedoc/scramble": "^0.13.48",
         "laravel/framework": "^13.17",
+        "laravel/horizon": "^5.50",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^3.0"
+        "laravel/tinker": "^3.0",
+        "orchid/platform": "^14.53"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.7",
         "captainhook/captainhook": "^5.29",
         "captainhook/plugin-composer": "^5.3",
         "fakerphp/faker": "^1.23",
@@ -59,6 +62,9 @@
             "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta",
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
         "post-root-package-install": [
