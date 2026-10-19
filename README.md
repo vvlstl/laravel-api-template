@@ -1,58 +1,73 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel API Template
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Шаблон API-бэкенда Laravel под SPA-фронтенд: аутентификация на Sanctum, админ-панель Orchid, очереди с мониторингом Horizon, автогенерация OpenAPI-документации.
 
-## About Laravel
+## Стек
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Задача | Инструмент |
+|---|---|
+| Фреймворк | Laravel 13, PHP 8.5 |
+| Аутентификация API | [Sanctum](https://laravel.com/docs/sanctum) — cookie для SPA + персональные токены |
+| Админ-панель | [Orchid](https://orchid.software) |
+| Очереди и мониторинг | [Horizon](https://laravel.com/docs/horizon) (Redis) |
+| Документация API | [Scramble](https://scramble.dedoc.com) — OpenAPI на `/api/documentation` |
+| Тесты | [Pest](https://pestphp.com) |
+| Стиль кода | [Pint](https://laravel.com/docs/pint) |
+| Статический анализ | [Larastan](https://github.com/larastan/larastan) (PHPStan) |
+| Git-хуки | [CaptainHook](https://captainhookphp.github.io) — формат коммитов, Pint, тесты на push |
+| CI | GitHub Actions — Pint + PHPStan + Pest |
+| Инфраструктура | Docker (nginx + php-fpm + PostgreSQL 16 + Redis 7), dev и prod конфигурации |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Быстрый старт
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Локально:
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```sh
+composer setup          # install + .env + key + migrate + npm build
+php artisan orchid:admin  # первый админ для панели
+composer dev            # dev-серверы (laravel dev)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Через Docker (nginx на `:8000`, отдельный контейнер Horizon):
 
-## Contributing
+```sh
+docker compose -f compose.dev.yaml up -d --build
+docker compose -f compose.dev.yaml exec app php artisan orchid:admin
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Основные адреса в dev-окружении:
 
-## Code of Conduct
+- API — `/api/v1/...`
+- Админ-панель — `/admin` (Orchid)
+- Документация API — `/api/documentation` (Scramble)
+- Мониторинг очередей — `/horizon` (доступ по пермишену `platform.horizon`)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Аутентификация
 
-## Security Vulnerabilities
+SPA-сценарий (cookie + CSRF):
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. `GET /sanctum/csrf-cookie` — получить `XSRF-TOKEN`;
+2. далее запросы с credentials, домен фронтенда указать в `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `SESSION_DOMAIN` (`.env`).
 
-## License
+Модель `App\Models\Customer` — клиент с авторизацией по телефону (`phone`, `phone_verified_at`). Расширяется под конкретный проект.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Базовое поведение API (JSON-ошибки 404/401, CORS, CSRF-cookie) покрыто тестами в `tests/Feature/ApiBaseTest.php`.
+
+## Качество кода
+
+```sh
+composer test                       # Pest
+./vendor/bin/pint --test            # стиль
+./vendor/bin/phpstan analyse        # статический анализ
+```
+
+Хуки CaptainHook активируются автоматически при `composer install` (плагин `captainhook/plugin-composer`): заголовок коммита — Conventional Commits, pre-commit — Pint, pre-push — Pest.
+
+## Новый проект из шаблона
+
+1. GitHub → **Use this template** → создать репозиторий проекта.
+2. `composer.json`: поменять `name`, `description`.
+3. `.env`: `APP_NAME`, `APP_URL`, `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `SESSION_DOMAIN` — под домены проекта.
+4. Переписать этот README под проект.
+5. Если phone-авторизация клиентов не нужна — удалить `app/Models/Customer.php` и миграцию `create_customers_table`; базовые тесты от неё не зависят.
+6. Демо-экраны Orchid (`app/Orchid/Screens/Examples`, `app/Orchid/Layouts/Examples`, `routes/platform.php`, меню в `app/Orchid/PlatformProvider.php`) — справочник; удалить, когда неактуальны.
