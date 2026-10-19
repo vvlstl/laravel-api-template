@@ -99,14 +99,7 @@ class PlatformProvider extends OrchidServiceProvider
             ItemPermission::group(__('System'))
                 ->addPermission('platform.systems.roles', __('Roles'))
                 ->addPermission('platform.systems.users', __('Users'))
-                ->addPermission('platform.horizon', 'Horizon')
-                ->addPermission('platform.content', 'Контент')
-                ->addPermission('platform.leads', 'Заявки')
-                ->addPermission('platform.orders', 'Заказы: просмотр')
-                ->addPermission('platform.orders.status', 'Заказы: смена статуса')
-                ->addPermission('platform.orders.documents', 'Заказы: документы СТС')
-                ->addPermission('platform.payments.refund', 'Возвраты')
-                ->addPermission('platform.settings', 'Настройки и цены'),
+                ->addPermission('platform.horizon', 'Horizon'),
         ];
     }
 }
